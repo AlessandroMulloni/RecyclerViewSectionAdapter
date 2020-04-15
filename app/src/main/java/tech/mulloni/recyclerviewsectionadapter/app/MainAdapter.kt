@@ -59,7 +59,7 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
 
     override fun onBindViewHolder(holder: MainViewHolder, section: Int, position: Int) {
         if (holder is MainViewHolderCell) {
-            holder.itemView.textView.text = "${position}"
+            holder.itemView.textView.text = "${section} - ${position}"
         }
     }
 }
