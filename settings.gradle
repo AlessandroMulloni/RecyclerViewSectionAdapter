@@ -1,0 +1,2 @@
+include ':app', ':recyclerviewsectionadapter'
+rootProject.name='RecyclerViewSectionAdapter'
