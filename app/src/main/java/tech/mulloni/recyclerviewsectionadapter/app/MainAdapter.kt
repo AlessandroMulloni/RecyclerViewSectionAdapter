@@ -16,11 +16,24 @@ open class MainViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) { }
 class MainViewHolderCell(itemView: View): MainViewHolder(itemView) { }
 
 class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
-    val VIEW_TYPE_HEADER = 0
     val VIEW_TYPE_CELL = 1
 
     override fun getSectionCount(): Int {
-        return 4
+        return 5
+    }
+
+    override fun hasHeader(section: Int): Boolean {
+        when (section) {
+            0, 2 -> return true
+            else -> return false
+        }
+    }
+
+    override fun hasFooter(section: Int): Boolean {
+        when (section) {
+            1, 2, 4 -> return true
+            else -> return false
+        }
     }
 
     override fun getItemCount(section: Int): Int {
@@ -29,25 +42,28 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
             1 -> return 7
             2 -> return 6
             3 -> return 8
+            4 -> return 3
         }
 
         return 0
     }
 
     override fun getItemViewType(section: Int, position: Int): Int {
-        if (position == 0) {
-            return VIEW_TYPE_HEADER
-        } else {
-            return VIEW_TYPE_CELL
-        }
+        return VIEW_TYPE_CELL
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
+    override fun onCreateViewHolderHeader(parent: ViewGroup): MainViewHolder {
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_header, parent, false)
+        return MainViewHolder(itemView)
+    }
+
+    override fun onCreateViewHolderFooter(parent: ViewGroup): MainViewHolder {
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_footer, parent, false)
+        return MainViewHolder(itemView)
+    }
+
+    override fun onCreateViewHolderView(parent: ViewGroup, viewType: Int): MainViewHolder {
         when (viewType) {
-            VIEW_TYPE_HEADER -> {
-                val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_header, parent, false)
-                return MainViewHolder(itemView)
-            }
             VIEW_TYPE_CELL -> {
                 val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_cell, parent, false)
                 return MainViewHolderCell(itemView)
