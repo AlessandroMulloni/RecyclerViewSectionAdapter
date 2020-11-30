@@ -38,9 +38,9 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder?>: Recycl
 
     abstract fun onBindViewHolder(holder: VH, section: Int, position: Int)
 
-    fun onBindHeader(holder: VH, section: Int) { }
+    open fun onBindHeader(holder: VH, section: Int) { }
 
-    fun onBindFooter(holder: VH, section: Int) { }
+    open fun onBindFooter(holder: VH, section: Int) { }
 
     open fun getItemViewType(section: Int, position: Int): Int {
         return 0
