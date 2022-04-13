@@ -18,6 +18,10 @@ class MainViewHolderCell(itemView: View): MainViewHolder(itemView) {
 
 class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
     val VIEW_TYPE_CELL = 1
+    val VIEW_TYPE_HEADER_1 = 2
+    val VIEW_TYPE_HEADER_2 = 3
+    val VIEW_TYPE_FOOTER_1 = 4
+    val VIEW_TYPE_FOOTER_2 = 5
 
     override fun getSectionCount(): Int {
         return 5
@@ -30,10 +34,24 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
         }
     }
 
+    override fun getHeaderType(section: Int): Int {
+        when (section) {
+            0 -> return VIEW_TYPE_HEADER_1
+            else -> return VIEW_TYPE_HEADER_2
+        }
+    }
+
     override fun hasFooter(section: Int): Boolean {
         when (section) {
             1, 2, 4 -> return true
             else -> return false
+        }
+    }
+
+    override fun getFooterType(section: Int): Int {
+        when (section) {
+            1, 4 -> return VIEW_TYPE_FOOTER_1
+            else -> return VIEW_TYPE_FOOTER_2
         }
     }
 
@@ -49,21 +67,29 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
         return 0
     }
 
-    override fun getItemViewType(section: Int, position: Int): Int {
+    override fun getViewType(section: Int, position: Int): Int {
         return VIEW_TYPE_CELL
     }
 
-    override fun onCreateViewHolderHeader(parent: ViewGroup): MainViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_header, parent, false)
+    override fun onCreateHeader(parent: ViewGroup, viewType: Int): MainViewHolder {
+        val itemView = when (viewType) {
+            VIEW_TYPE_HEADER_1 -> LayoutInflater.from(parent.context).inflate(R.layout.view_header_1, parent, false)
+            VIEW_TYPE_HEADER_2 -> LayoutInflater.from(parent.context).inflate(R.layout.view_header_2, parent, false)
+            else -> throw Exception()
+        }
         return MainViewHolder(itemView)
     }
 
-    override fun onCreateViewHolderFooter(parent: ViewGroup): MainViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_footer, parent, false)
+    override fun onCreateFooter(parent: ViewGroup, viewType: Int): MainViewHolder {
+        val itemView = when (viewType) {
+            VIEW_TYPE_FOOTER_1 -> LayoutInflater.from(parent.context).inflate(R.layout.view_footer_1, parent, false)
+            VIEW_TYPE_FOOTER_2 -> LayoutInflater.from(parent.context).inflate(R.layout.view_footer_2, parent, false)
+            else -> throw Exception()
+        }
         return MainViewHolder(itemView)
     }
 
-    override fun onCreateViewHolderView(parent: ViewGroup, viewType: Int): MainViewHolder {
+    override fun onCreateView(parent: ViewGroup, viewType: Int): MainViewHolder {
         when (viewType) {
             VIEW_TYPE_CELL -> {
                 val itemView = LayoutInflater.from(parent.context).inflate(R.layout.view_cell, parent, false)
@@ -74,7 +100,7 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
         throw Exception()
     }
 
-    override fun onBindViewHolder(holder: MainViewHolder, section: Int, position: Int) {
+    override fun onBindView(holder: MainViewHolder, section: Int, position: Int) {
         if (holder is MainViewHolderCell) {
             holder.binding.textView.text = "${section} - ${position}"
         }

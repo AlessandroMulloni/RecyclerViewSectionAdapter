@@ -18,32 +18,46 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
 
     abstract fun getItemCount(section: Int): Int
 
+    /// Create and manage views
+
+    abstract fun onCreateView(parent: ViewGroup, viewType: Int): VH
+
+    abstract fun onBindView(holder: VH, section: Int, position: Int)
+
+    open fun getViewType(section: Int, position: Int): Int {
+        return 0
+    }
+
+    /// Create and manage headers
+
     open fun hasHeader(section: Int): Boolean {
         return false
     }
+
+    open fun onCreateHeader(parent: ViewGroup, viewType: Int): VH {
+        throw RuntimeException("Implement this method if you are using headers")
+    }
+
+    open fun onBindHeader(holder: VH, section: Int) { }
+
+    open fun getHeaderType(section: Int): Int {
+        return Int.MAX_VALUE - 1
+    }
+
+    /// Create and manage footers
 
     open fun hasFooter(section: Int): Boolean {
         return false
     }
 
-    open fun onCreateViewHolderHeader(parent: ViewGroup): VH {
-        throw RuntimeException("Implement this method if you are using headers")
-    }
-
-    open fun onCreateViewHolderFooter(parent: ViewGroup): VH {
+    open fun onCreateFooter(parent: ViewGroup, viewType: Int): VH {
         throw RuntimeException("Implement this method if you are using footers")
     }
 
-    abstract fun onCreateViewHolderView(parent: ViewGroup, viewType: Int): VH
-
-    abstract fun onBindViewHolder(holder: VH, section: Int, position: Int)
-
-    open fun onBindHeader(holder: VH, section: Int) { }
-
     open fun onBindFooter(holder: VH, section: Int) { }
 
-    open fun getItemViewType(section: Int, position: Int): Int {
-        return 0
+    open fun getFooterType(section: Int): Int {
+        return Int.MAX_VALUE
     }
 
     /// Notifications
@@ -65,18 +79,19 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
 
     /// Base Adapter functions implemented with sections
 
-    val HEADER_VIEW_TYPE = 0x01000000
-    val FOOTER_VIEW_TYPE = 0x02000000
+    val viewTypesHeader: MutableSet<Int> = mutableSetOf()
+    val viewTypesFooter: MutableSet<Int> = mutableSetOf()
+    val viewTypesView: MutableSet<Int> = mutableSetOf()
 
     final override fun getItemCount(): Int {
         return (0 until getSectionCount()).map { getSectionItemCount(it) }.sum()
     }
 
     final override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        when (viewType) {
-            HEADER_VIEW_TYPE -> return onCreateViewHolderHeader(parent)
-            FOOTER_VIEW_TYPE -> return onCreateViewHolderFooter(parent)
-            else -> return onCreateViewHolderView(parent, viewType)
+        when {
+            viewTypesHeader.contains(viewType) -> return onCreateHeader(parent, viewType)
+            viewTypesFooter.contains(viewType) -> return onCreateFooter(parent, viewType)
+            else -> return onCreateView(parent, viewType)
         }
     }
 
@@ -90,7 +105,7 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
                 onBindFooter(holder, splitPosition.section)
             }
             SplitPositionType.view -> {
-                onBindViewHolder(holder, splitPosition.section, splitPosition.position)
+                onBindView(holder, splitPosition.section, splitPosition.position)
             }
         }
     }
@@ -98,14 +113,23 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
     final override fun getItemViewType(position: Int): Int {
         val splitPosition = computeSplitPosition(position)
         when (splitPosition.type) {
-            SplitPositionType.header -> return HEADER_VIEW_TYPE
-            SplitPositionType.footer -> return FOOTER_VIEW_TYPE
+            SplitPositionType.header -> {
+                val type = getHeaderType(splitPosition.section)
+                viewTypesHeader.add(type)
+                validateViewTypeCollisions()
+                return type
+            }
+            SplitPositionType.footer -> {
+                val type = getFooterType(splitPosition.section)
+                viewTypesFooter.add(type)
+                validateViewTypeCollisions()
+                return type
+            }
             SplitPositionType.view -> {
-                val itemViewType = getItemViewType(splitPosition.section, splitPosition.position)
-                if (itemViewType == HEADER_VIEW_TYPE || itemViewType == FOOTER_VIEW_TYPE) {
-                    throw RuntimeException("Please do not use the IDs reserved for headers (${HEADER_VIEW_TYPE}) and footers ($FOOTER_VIEW_TYPE)")
-                }
-                return itemViewType
+                val type = getViewType(splitPosition.section, splitPosition.position)
+                viewTypesView.add(type)
+                validateViewTypeCollisions()
+                return type
             }
         }
     }
@@ -134,6 +158,18 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
         } else {
             val adjustedPosition = if (hasHeader(section)) (position - 1) else position
             return SplitPosition(SplitPositionType.view, section, adjustedPosition)
+        }
+    }
+
+    // This function makes sure that there are no view types used by headers, footers and views
+    // at the same time. Every view type should only be used by either headers, footers or views.
+    // In case there is a conflict, the function will throw and exception
+    private fun validateViewTypeCollisions() {
+        if (viewTypesHeader.intersect(viewTypesFooter).isNotEmpty() or
+            viewTypesHeader.intersect(viewTypesView).isNotEmpty() or
+            viewTypesFooter.intersect(viewTypesView).isNotEmpty())
+        {
+            throw RuntimeException("Please do not use the same ID for headers, footers or views at the same time. Every view type should only be used by either headers, footers or views.")
         }
     }
 }
