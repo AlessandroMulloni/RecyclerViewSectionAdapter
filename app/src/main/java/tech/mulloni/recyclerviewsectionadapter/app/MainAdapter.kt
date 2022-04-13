@@ -4,16 +4,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.view_cell.view.*
 
-import tech.mulloni.RecyclerViewSectionAdapterApp.R
 import tech.mulloni.recyclerviewsectionadapter.RecyclerViewSectionAdapter
+import tech.mulloni.recyclerviewsectionadapter.app.databinding.ViewCellBinding
 
 import java.lang.Exception
 
 open class MainViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) { }
 
-class MainViewHolderCell(itemView: View): MainViewHolder(itemView) { }
+class MainViewHolderCell(itemView: View): MainViewHolder(itemView) {
+    val binding = ViewCellBinding.bind(itemView)
+}
 
 class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
     val VIEW_TYPE_CELL = 1
@@ -75,7 +76,7 @@ class MainAdapter: RecyclerViewSectionAdapter<MainViewHolder>() {
 
     override fun onBindViewHolder(holder: MainViewHolder, section: Int, position: Int) {
         if (holder is MainViewHolderCell) {
-            holder.itemView.textView.text = "${section} - ${position}"
+            holder.binding.textView.text = "${section} - ${position}"
         }
     }
 }
