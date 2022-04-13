@@ -10,7 +10,7 @@ data class SplitPosition(
     val position: Int
 )
 
-abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder?>: RecyclerView.Adapter<VH>() {
+abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: RecyclerView.Adapter<VH>() {
 
     /// Custom functions to manage sections
 
