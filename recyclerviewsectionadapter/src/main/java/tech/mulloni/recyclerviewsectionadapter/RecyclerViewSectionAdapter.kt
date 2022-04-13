@@ -112,7 +112,7 @@ abstract class RecyclerViewSectionAdapter<VH : RecyclerView.ViewHolder>: Recycle
 
     /// Helper functions
 
-    private fun getSectionItemCount(section: Int): Int {
+    fun getSectionItemCount(section: Int): Int {
         val headerCount = if (hasHeader(section)) 1 else 0
         val footerCount = if (hasFooter(section)) 1 else 0
         return headerCount + getItemCount(section) + footerCount
